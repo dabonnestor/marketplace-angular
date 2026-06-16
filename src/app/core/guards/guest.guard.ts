@@ -1,8 +1,14 @@
 import { inject } from '@angular/core';
 import { Router } from '@angular/router';
+import { AuthService } from '../services/auth.service';
 
 export const guestGuard = () => {
+  const authService = inject(AuthService);
   const router = inject(Router);
-  // TODO: Implement actual guest check in Auth slice
-  return true;
+
+  if (!authService.isAuthenticated()) {
+    return true;
+  }
+
+  return router.parseUrl('/');
 };

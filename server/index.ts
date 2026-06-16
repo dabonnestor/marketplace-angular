@@ -3,6 +3,7 @@ import path from 'path';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import { createProxyMiddleware } from './proxy';
+import { createAuthRoutes } from './auth';
 
 const PORT = process.env['PORT'] ? parseInt(process.env['PORT']) : 3000;
 const API_BASE_URL = process.env['API_BASE_URL'] || 'http://localhost:8080';
@@ -14,6 +15,7 @@ export function createServer({ apiBaseUrl }: { apiBaseUrl: string }) {
   app.use(cors({ origin: true, credentials: true }));
   app.use(cookieParser());
   app.use(express.json());
+  app.use(createAuthRoutes(apiBaseUrl));
   app.use(createProxyMiddleware(apiBaseUrl));
 
   // Serve Angular static files in production
