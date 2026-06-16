@@ -84,7 +84,7 @@ export function createAuthRoutes(apiBaseUrl: string) {
         path: '/',
       });
 
-      res.json({ user: data.user });
+      res.json({ user: data });
     } catch (error) {
       res.status(502).json({ message: 'Auth service unavailable' });
     }

@@ -50,7 +50,7 @@ describe('BFF auth routes', () => {
       if (!auth || !auth.startsWith('Bearer ')) {
         return res.status(401).json({ message: 'Unauthorized' });
       }
-      res.json({ user: mockUser });
+      res.json(mockUser);
     });
 
     mockApi.post('/api/v1/auth/refresh', (req, res) => {

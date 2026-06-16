@@ -3,6 +3,7 @@ import { provideRouter, Router } from '@angular/router';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { Component } from '@angular/core';
+import { firstValueFrom } from 'rxjs';
 import { authGuard } from './auth.guard';
 import { AuthService } from '../services/auth.service';
 
@@ -44,7 +45,11 @@ describe('authGuard', () => {
   });
 
   it('redirects to /login when user is not authenticated', async () => {
-    const result = await TestBed.runInInjectionContext(() => authGuard());
+    const resultPromise = firstValueFrom(
+      TestBed.runInInjectionContext(() => authGuard()),
+    );
+    httpMock.expectOne('/api/auth/me').flush(null, { status: 401, statusText: 'Unauthorized' });
+    const result = await resultPromise;
     expect(result).not.toBe(true);
     expect(result?.toString()).toBe('/login');
   });

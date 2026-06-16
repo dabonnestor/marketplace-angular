@@ -1,6 +1,7 @@
 import { Injectable, computed, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { tap, catchError } from 'rxjs';
+import { Observable } from 'rxjs';
+import { tap, catchError, finalize, share } from 'rxjs';
 
 export interface User {
   id: string;
@@ -13,6 +14,9 @@ export class AuthService {
   private _currentUser = signal<User | null>(null);
   readonly currentUser = this._currentUser.asReadonly();
   readonly isAuthenticated = computed(() => this._currentUser() !== null);
+  private _authResolved = signal(false);
+  readonly authResolved = this._authResolved.asReadonly();
+  private authCheckRequest$: Observable<{ user: User }> | null = null;
 
   constructor(private http: HttpClient) {}
 
@@ -35,12 +39,24 @@ export class AuthService {
   }
 
   checkAuthStatus() {
-    return this.http.get<{ user: User }>('/api/auth/me').pipe(
+    if (this.authCheckRequest$) {
+      return this.authCheckRequest$;
+    }
+    this.authCheckRequest$ = this.http.get<{ user: User }>('/api/auth/me').pipe(
       tap({
-        next: (res) => this._currentUser.set(res.user),
-        error: () => this._currentUser.set(null),
+        next: (res) => {
+          this._currentUser.set(res.user);
+          this._authResolved.set(true);
+        },
+        error: () => {
+          this._currentUser.set(null);
+          this._authResolved.set(true);
+        },
       }),
+      finalize(() => { this.authCheckRequest$ = null; }),
+      share(),
     );
+    return this.authCheckRequest$;
   }
 
   refreshToken() {

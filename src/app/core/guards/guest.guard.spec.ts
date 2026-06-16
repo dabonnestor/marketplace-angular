@@ -3,6 +3,7 @@ import { provideRouter, Router } from '@angular/router';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { Component } from '@angular/core';
+import { firstValueFrom } from 'rxjs';
 import { guestGuard } from './guest.guard';
 import { AuthService } from '../services/auth.service';
 
@@ -33,7 +34,11 @@ describe('guestGuard', () => {
   });
 
   it('allows navigation when user is not authenticated', async () => {
-    const result = await TestBed.runInInjectionContext(() => guestGuard());
+    const resultPromise = firstValueFrom(
+      TestBed.runInInjectionContext(() => guestGuard()),
+    );
+    httpMock.expectOne('/api/auth/me').flush(null, { status: 401, statusText: 'Unauthorized' });
+    const result = await resultPromise;
     expect(result).toBe(true);
   });
 
