@@ -11,8 +11,12 @@ describe('BFF proxy', () => {
   beforeAll(async () => {
     // Create a mock marketplace API that the BFF will forward to
     mockApi = express();
-    mockApi.get('/api/listings', (_req, res) => {
-      res.json({ listings: [{ id: '1', title: 'Test Listing' }] });
+    mockApi.get('/api/listings', (req, res) => {
+      if (Object.keys(req.query).length > 0) {
+        res.json({ query: req.query });
+      } else {
+        res.json({ listings: [{ id: '1', title: 'Test Listing' }] });
+      }
     });
 
     await new Promise<void>((resolve) => {
@@ -37,6 +41,15 @@ describe('BFF proxy', () => {
     expect(response.status).toBe(200);
     expect(response.body).toEqual({
       listings: [{ id: '1', title: 'Test Listing' }],
+    });
+  });
+
+  it('forwards query params from the original request to the marketplace API', async () => {
+    const response = await request(bff).get('/api/listings?search=shoes&category=1');
+
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual({
+      query: { search: 'shoes', category: '1' },
     });
   });
 });
