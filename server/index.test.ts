@@ -11,7 +11,7 @@ describe('BFF proxy', () => {
   beforeAll(async () => {
     // Create a mock marketplace API that the BFF will forward to
     mockApi = express();
-    mockApi.get('/api/listings', (req, res) => {
+    mockApi.get('/api/v1/listings', (req, res) => {
       if (Object.keys(req.query).length > 0) {
         res.json({ query: req.query });
       } else {

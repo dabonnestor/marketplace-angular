@@ -14,7 +14,9 @@ async function forwardRequest(req: Request, apiBaseUrl: string, accessToken?: st
   const queryString = req.originalUrl.includes('?')
     ? req.originalUrl.slice(req.originalUrl.indexOf('?'))
     : '';
-  const targetUrl = `${apiBaseUrl}${req.path}${queryString}`;
+  // Rewrite /api/* to /api/v1/* so the BFF paths match the backend API paths
+  const backendPath = req.path.replace('/api/', '/api/v1/');
+  const targetUrl = `${apiBaseUrl}${backendPath}${queryString}`;
   const headers: Record<string, string> = {};
 
   if (req.headers['content-type']) {
@@ -70,10 +72,15 @@ export function createProxyMiddleware(apiBaseUrl: string) {
         }
       }
 
+      const contentType = response.headers.get('content-type') || '';
+      if (!contentType.includes('application/json')) {
+        return res.status(502).json({ message: 'Backend returned non-JSON response' });
+      }
+
       const data = await response.json();
       res.status(response.status).json(data);
     } catch (error) {
-      next(error);
+      res.status(502).json({ message: 'API service unavailable' });
     }
   };
 }

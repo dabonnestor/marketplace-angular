@@ -14,7 +14,7 @@ describe('Proxy token forwarding', () => {
     mockApi = express();
     mockApi.use(express.json());
 
-    mockApi.get('/api/protected', (req, res) => {
+    mockApi.get('/api/v1/protected', (req, res) => {
       const auth = req.headers['authorization'];
       if (!auth) {
         return res.status(401).json({ message: 'No token' });
@@ -34,7 +34,7 @@ describe('Proxy token forwarding', () => {
       });
     });
 
-    mockApi.get('/api/protected-refresh', (req, res) => {
+    mockApi.get('/api/v1/protected-refresh', (req, res) => {
       const auth = req.headers['authorization'];
       // First call with expired token returns 401
       if (auth === 'Bearer old-token' && !refreshCalled) {
