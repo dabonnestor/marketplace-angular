@@ -7,7 +7,10 @@ export function createProxyMiddleware(apiBaseUrl: string) {
     }
 
     try {
-      const targetUrl = `${apiBaseUrl}${req.path}`;
+      const queryString = req.originalUrl.includes('?')
+        ? req.originalUrl.slice(req.originalUrl.indexOf('?'))
+        : '';
+      const targetUrl = `${apiBaseUrl}${req.path}${queryString}`;
       const headers: Record<string, string> = {};
 
       // Forward relevant headers
